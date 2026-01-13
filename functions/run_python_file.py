@@ -1,5 +1,33 @@
 import os
 import subprocess
+from google import genai
+from google.genai import types
+
+schema_run_python_file = types.FunctionDeclaration(
+            name="run_python_file",
+            description="Runs the given python file",
+            parameters=types.Schema(
+                type=types.Type.OBJECT,
+                required=["file_path"],
+                properties={
+                    "directory": types.Schema(
+                        type=types.Type.STRING,
+                        description="Directory path to list files from, relative to the working directory (default is the working directory itself)",
+                    ),
+                    "file_path": types.Schema(
+                        type=types.Type.STRING,
+                        description="Relative file path to relative to the working directory (default is the working directory itself)",
+                    ),
+                    "args": types.Schema(
+                        type=types.Type.ARRAY,
+                        items=types.Schema(
+                            type=types.Type.STRING,
+                        ),
+                        description="Optional list of arguments to pass to the Python script",
+                    ),
+                },
+            ),
+        )
 
 def run_python_file(working_directory, file_path, args=None):
     try:
@@ -25,14 +53,14 @@ def run_python_file(working_directory, file_path, args=None):
         )
         output_str = ""
         if result.returncode != 0:
-            output_str = (f"Process exited with code {result.returncode}")
+            output_str = (f"Process exited with code {result.returncode}\n")
         if not result.stdout and not result.stderr:
             output_str += "No output produced"
         else:
             if result.stdout:
-                output_str += (f"STDOUT:\n{result.stdout}")
+                output_str += (f"STDOUT:{result.stdout}\n")
             if result.stderr:
-                output_str += (f"STDERR:\n{result.stderr}")
+                output_str += (f"STDERR:{result.stderr}\n")
         return output_str
     except Exception as e:
         return (f"Error: executing Python file: {e}")
